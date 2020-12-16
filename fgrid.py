@@ -61,7 +61,7 @@ nbr_update = dict((
 def repair_grid(gridfilename):
 	geo = fgrid()
 	geo._read_inp(gridfilename)
-	print 'The following duplicates were removed...'
+	print('The following duplicates were removed...')
 	# with the repair flag, duplicate nodes will be deleted
 	geo.add_nodetree(repair = geo)
 	# now need to renumber nodes
@@ -74,7 +74,7 @@ def repair_grid(gridfilename):
 		i0 = nd.index
 	
 	newgridfilename = gridfilename.split('.')[0]+'.repaired' 
-	print 'Writing repaired grid file '+newgridfilename
+	print('Writing repaired grid file '+newgridfilename)
 	geo.write(newgridfilename)
 	geo.read(newgridfilename)
 	return geo
@@ -126,7 +126,7 @@ class fnode(object):				#Node object.
 	def __getstate__(self):
 		return dict((k, getattr(self, k)) for k in self.__slots__)
 	def __setstate__(self, data_dict):
-		for (name, value) in data_dict.iteritems():
+		for (name, value) in data_dict.items():
 			setattr(self, name, value)
 	def _get_index(self): return self._index
 	index = property(_get_index) #: (*int*) Integer number denoting the node.	
@@ -210,10 +210,10 @@ class fnode(object):				#Node object.
 			prntStr += '    Pressure coupling = ' +str(self.pressure_coupling)+'\n'
 		if self.generator:
 			prntStr+='\nGenerator properties.......\n'
-			ks = self.generator.keys()
+			ks = list(self.generator.keys())
 			for k in ks:
 				prntStr += '    '+k + ' = ' +str(self.generator[k])+'\n'
-		print prntStr
+		print(prntStr)
 	what = property(_get_info)							#: Print to screen information about the node.
 	def _get_connected_nodes(self):
 		ndlist = []
@@ -226,7 +226,7 @@ class fnode(object):				#Node object.
 	connections = property(_get_connections)#: (*lst[fconn]*) List of connection objects of which the node is a member.
 	def _get_elements(self): return self._elements
 	elements = property(_get_elements)#: (*lst[felem]*) List of element objects of which the node is a member.
-	def _get_zonelist(self): return [self.zone[k] for k in self.zone.keys()]
+	def _get_zonelist(self): return [self.zone[k] for k in list(self.zone.keys())]
 	zonelist = property(_get_zonelist)	#: (*lst[fzone]*) List of zones of which the node is a member
 	def _get_vol(self): return self._vol
 	vol = property(_get_vol)				#: (*fl64*) Control volume associated with the node. This information only available if volumes() method called from grid attribute.
@@ -327,15 +327,15 @@ class felem(object):				#Element object.
 		return c
 	centre = property(_get_centre)	#: (*ndarray*) Coordinates of the element centroid.
 	def get_info(self):
-		print 'Element number: '+str(self.index)
-		print '      Centroid: '
-		print '            x = '+str(self.centre[0])
-		print '            y = '+str(self.centre[1])
-		print '            z = '+str(self.centre[2])
+		print('Element number: '+str(self.index))
+		print('      Centroid: ')
+		print('            x = '+str(self.centre[0]))
+		print('            y = '+str(self.centre[1]))
+		print('            z = '+str(self.centre[2]))
 		prntStr =  'Contains nodes: ['
 		for nd in self.nodes: prntStr += str(nd.index) +','
 		prntStr = prntStr[:-1]+']'
-		print prntStr
+		print(prntStr)
 	what = property(get_info)				#: Print to screen information about the element.
 	def _get_nodes(self): return self._nodes
 	nodes = property(_get_nodes)#: (*lst[fnode]*) List of node objects that define the element.		
@@ -375,18 +375,18 @@ class octree(object):				#Octree object.
 					dist = np.sqrt(dist[0]**2+dist[1]**2+dist[2]**2)
 					if dist == 0: multipleFlag = True; break
 				if multipleFlag:
-					print 'ERROR: multiple nodes specified at same location. See below for details.'
+					print('ERROR: multiple nodes specified at same location. See below for details.')
 					elt = self.elements[0]
-					print ''
-					print 'Node '+str(elt.index)+': '+str(elt.position)
+					print('')
+					print('Node '+str(elt.index)+': '+str(elt.position))
 					for elt in self.elements[1:]:
 						pos = elt.position
 						dist = np.array(pos)-np.array(pos0)
 						dist = np.sqrt(dist[0]**2+dist[1]**2+dist[2]**2)
 						if dist == 0: 
-							print 'Node '+str(elt.index)+': '+str(elt.position)
-					print ''
-					print 'Run repair_grid() to attempt fix.'
+							print('Node '+str(elt.index)+': '+str(elt.position))
+					print('')
+					print('Run repair_grid() to attempt fix.')
 					return
 			else:
 				pos0 = self.elements[0].position
@@ -414,7 +414,7 @@ class octree(object):				#Octree object.
 						ind = repair._nodelist.index(nd2)
 						repair._nodelist.remove(nd2)
 							
-						print '  ',nd2,' duplicated ',nd1
+						print('  ',nd2,' duplicated ',nd1)
 					self.elements = [nd1]
 		if self.num_elements>1: 	# if more than one element in a cube, sub-divide
 			cubes=sub_cubes(self.bounds)
@@ -504,7 +504,7 @@ class fgrid(object):				#Grid object.
 		self._full_connectivity = full_connectivity
 		self._path.filename = gridfilename 
 		if not os.path.isfile(gridfilename):
-			print 'ERROR: file at '+self._path.full_path+' not found.'; return
+			print('ERROR: file at '+self._path.full_path+' not found.'); return
 		# assess format of file	from first two lines
 		infile = open(self._path.full_path)
 		ln1 = infile.readline()
@@ -529,7 +529,7 @@ class fgrid(object):				#Grid object.
 			self.write(newgridfilename, 'fehm')		# write out equivalent fehm grid
 			if self._parent: self._parent.files.grid = self._path.filename
 		else:
-			print 'ERROR: Unrecognized grid format.'
+			print('ERROR: Unrecognized grid format.')
 			
 		if octree: self.add_nodetree()
 		else: self._pos_matrix = np.array([nd.position for nd in self.nodelist])
@@ -570,7 +570,7 @@ class fgrid(object):				#Grid object.
 					nds1 = [el[1],el[2],el[3]]
 					nds2 = [el[2],el[3],el[1]]
 				else:
-					print 'ERROR: unrecognized connectivity'; return
+					print('ERROR: unrecognized connectivity'); return
 				for nd1,nd2 in zip(nds1,nds2):
 					if nd1>nd2: ndi = nd2; nd2 = nd1; nd1 = ndi
 					nd1 = self.node[nd1]; nd2 = self.node[nd2]
@@ -634,7 +634,7 @@ class fgrid(object):				#Grid object.
 					nds1 = [el[1],el[2],el[3]]
 					nds2 = [el[2],el[3],el[1]]
 				else:
-					print 'ERROR: unrecognized connectivity'; return
+					print('ERROR: unrecognized connectivity'); return
 				for nd1,nd2 in zip(nds1,nds2):
 					if nd1>nd2: ndi = nd2; nd2 = nd1; nd1 = ndi
 					nd1 = self.node[nd1]; nd2 = self.node[nd2]
@@ -680,7 +680,7 @@ class fgrid(object):				#Grid object.
 			elif extension == 'stor': format = 'stor'
 		
 		if format == 'stor' and not self._full_connectivity:
-			print 'ERROR: STOR file cannot be written without full connectivity information. Read or create grid file with flag full_connectivity=True'; return
+			print('ERROR: STOR file cannot be written without full connectivity information. Read or create grid file with flag full_connectivity=True'); return
 
 		if format == 'stor': temp_path = copy(self._path)		# save path
 		if filename: self._path.filename=filename
@@ -706,7 +706,7 @@ class fgrid(object):				#Grid object.
 		if format == 'fehm': self._write_fehm(outfile)
 		elif format == 'avs': self._write_avs(outfile)
 		elif format == 'stor': self._write_stor(outfile,compression)
-		else: print 'ERROR: Unrecognized format '+format+'.'; return
+		else: print('ERROR: Unrecognized format '+format+'.'); return
 		
 		if format == 'stor': 
 			self._path = temp_path
@@ -870,7 +870,7 @@ class fgrid(object):				#Grid object.
 		if cnt != 0: outfile.write('\n')
 				
 		# indices into coefficient list
-		if not compression: indices1 = range(1,Ncons+1)
+		if not compression: indices1 = list(range(1,Ncons+1))
 		
 		indices = indices1+list(np.zeros((1,Nnds+1))[0])
 		cnt = 0
@@ -973,8 +973,8 @@ class fgrid(object):				#Grid object.
 		:type overwrite: bool
 		
 		"""
-		if self.filename == None: print 'ERROR: a grid must first be loaded/created before a stor file can be created.'; return
-		if not os.path.isfile(exe): print 'ERROR: cannot find lagrit executable at '+exe; return
+		if self.filename == None: print('ERROR: a grid must first be loaded/created before a stor file can be created.'); return
+		if not os.path.isfile(exe): print('ERROR: cannot find lagrit executable at '+exe); return
 		
 		# assign default stor file name if none given
 		if stor == None:
@@ -1101,7 +1101,7 @@ class fgrid(object):				#Grid object.
 			min_dist = 1.e10
 			nd = None
 			if self.octree.leaf(pos) == None:
-				print 'Error: point outside domain'
+				print('Error: point outside domain')
 				return None
 			lf = self.octree.leaf(pos)
 			min_dist= 1.e10
@@ -1185,7 +1185,6 @@ class fgrid(object):				#Grid object.
 		plt.clf()
 		fig = plt.figure(figsize=[10.5,8.275])
 		ax = plt.axes(projection='3d')
-		ax.set_aspect('equal', 'datalim')
 		
 		ax.set_xlabel(xlabel,size=font_size)
 		ax.set_ylabel(ylabel,size=font_size)
@@ -1341,12 +1340,12 @@ class fgrid(object):				#Grid object.
 		self._octree=octree(self.bounding_box,self.nodelist,repair=self)	
 	def _summary(self):		
 		L = 62
-		print ''
-		print ' ####---------------------------------------------------------####'
+		print('')
+		print(' ####---------------------------------------------------------####')
 		line = ' #### FEHM grid file \''+self.filename+'\' summary.'
 		for i in range(L-len(line)): line += ' '
-		print line+'####'
-		print ' ####---------------------------------------------------------####'
+		print(line+'####')
+		print(' ####---------------------------------------------------------####')
 		
 		lines = []
 		lines.append(' #### Domain extent:')
@@ -1360,7 +1359,7 @@ class fgrid(object):				#Grid object.
 		for line in lines:
 			if line.startswith(' ##'):
 				for i in range(L-len(line)): line += ' '
-				print line+'####'
+				print(line+'####')
 			else:
 				prntStr = ' #### -'
 				keepGoing = True
@@ -1368,7 +1367,7 @@ class fgrid(object):				#Grid object.
 				while keepGoing:
 					if not line: 
 						for i in range(L-len(prntStr)): prntStr += ' '
-						print prntStr+'####'
+						print(prntStr+'####')
 						prntStr = ' #### '
 						break
 					if len(prntStr)<(L-len(line[0])): 
@@ -1376,10 +1375,10 @@ class fgrid(object):				#Grid object.
 						line = line[1:]
 					else:
 						for i in range(L-len(prntStr)): prntStr += ' '
-						print prntStr+'####'
+						print(prntStr+'####')
 						prntStr = ' ####   '
-		print ' ####---------------------------------------------------------####'
-		print ''
+		print(' ####---------------------------------------------------------####')
+		print('')
 	def rotate(self,angle=0.,centre=[0.,0.]):
 		'''Rotates the grid by some angle about a specified vertical axis.
 		
@@ -1466,13 +1465,13 @@ class fgrid(object):				#Grid object.
 	def _set_octree(self,value): self._octree = value
 	octree = property(_get_octree, _set_octree) #: (*octree*) Octree object associated with the grid.
 	def get_info(self):
-		print 'FEHM grid file \''+self.filename+'\' summary.'
-		print 'Model domain: x = ['+str(self.xmin) + ', ' + str(self.xmax) + ']'
-		print '              y = ['+str(self.ymin) + ', ' + str(self.ymax) + ']'
-		print '              z = ['+str(self.zmin) + ', ' + str(self.zmax) + ']'
-		print '          nodes = ' +str(self.number_nodes)
-		print '       elements = ' +str(self.number_elems)
-		print ' '
+		print('FEHM grid file \''+self.filename+'\' summary.')
+		print('Model domain: x = ['+str(self.xmin) + ', ' + str(self.xmax) + ']')
+		print('              y = ['+str(self.ymin) + ', ' + str(self.ymax) + ']')
+		print('              z = ['+str(self.zmin) + ', ' + str(self.zmax) + ']')
+		print('          nodes = ' +str(self.number_nodes))
+		print('       elements = ' +str(self.number_elems))
+		print(' ')
 	what = property(get_info) 				#: Print to screen information about the grid.
 class fmake(object): 				#Rectilinear grid constructor.
 	"""Generate an orthogonal mesh corresponding to vectors of nodal positions.
@@ -1535,8 +1534,8 @@ class fmake(object): 				#Rectilinear grid constructor.
 		xF = self.x != None; yF = self.y != None; zF = self.z != None
 		if xF and yF and zF: self.dimension = 3
 		elif (xF and yF and not zF) or (xF and zF and not yF) or (zF and yF and not xF): self.dimension = 2
-		else: print 'ERROR: not enough dimensions specified'; return
-		if self.dimension == 2: print 'ERROR: two dimensional grids not supported'; return
+		else: print('ERROR: not enough dimensions specified'); return
+		if self.dimension == 2: print('ERROR: two dimensional grids not supported'); return
 		if self.dimension == 3:
 			# create nodes
 			self._nodelist = []

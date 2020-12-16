@@ -15,8 +15,8 @@ $Date: 2001-05-31 17:48:54 $
 Pearu Peterson
 """
 
-import DataSet
-import common
+from . import DataSet
+from . import common
 
 class RectilinearGrid(DataSet.DataSet):
     """
@@ -41,7 +41,7 @@ class RectilinearGrid(DataSet.DataSet):
         self.z = self.get_seq(z,[0])
         self.dimensions = (len(self.x),len(self.y),len(self.z))
         if self._check_dimensions():
-            raise ValueError,'dimensions must be 3-tuple of ints >=1'
+            raise ValueError('dimensions must be 3-tuple of ints >=1')
 
     def to_string(self, format='ascii'):
         tx = self.get_datatype(self.x)
@@ -66,22 +66,22 @@ class RectilinearGrid(DataSet.DataSet):
 def rectilinear_grid_fromfile(f,self):
     l = common._getline(f).split(' ')
     assert l[0].strip().lower() == 'dimensions'
-    dims = map(eval,l[1:])
+    dims = list(map(eval,l[1:]))
     assert len(dims)==3
     for c in 'xyz':
         l = common._getline(f)
         k,n,datatype = [s.strip().lower() for s in l.split(' ')]
         if k!=c+'_coordinates':
-            raise ValueError, 'expected %s_coordinates but got %s'%(c,`k`)
+            raise ValueError('expected %s_coordinates but got %s'%(c,repr(k)))
         n = eval(n)
-        assert datatype in ['bit','unsigned_char','char','unsigned_short','short','unsigned_int','int','unsigned_long','long','float','double'],`datatype`
+        assert datatype in ['bit','unsigned_char','char','unsigned_short','short','unsigned_int','int','unsigned_long','long','float','double'],repr(datatype)
         points = []
         while len(points) < n:
-            points += map(eval,common._getline(f).split(' '))
+            points += list(map(eval,common._getline(f).split(' ')))
         assert len(points)==n
-        exec '%s_coords = points'%c
-    assert map(len,[x_coords,y_coords,z_coords]) == dims
+        exec('%s_coords = points'%c)
+    assert list(map(len,[x_coords,y_coords,z_coords])) == dims
     return RectilinearGrid(x_coords,y_coords,z_coords),common._getline(f)
 
 if __name__ == "__main__":
-    print RectilinearGrid([1,2,2,4,4,5.4])
+    print(RectilinearGrid([1,2,2,4,4,5.4]))

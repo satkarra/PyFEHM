@@ -17,7 +17,8 @@ Pearu Peterson
 
 __version__ = "$Id: DataSet.py,v 1.3 2001-05-31 17:48:54 pearu Exp $"
 
-import common
+from . import common
+from functools import reduce
 
 class DataSet(common.Common):
     """Abstract class.
@@ -87,11 +88,11 @@ class DataSet(common.Common):
     def Field(self,func,name = None, **kws):
         return Field.Field([func(*p) for p in self.get_points()],name, **kws)
 
-import Scalars
-import ColorScalars
-import LookupTable
-import Vectors
-import Normals
-import TextureCoordinates
-import Tensors
-import Field
+from . import Scalars
+from . import ColorScalars
+from . import LookupTable
+from . import Vectors
+from . import Normals
+from . import TextureCoordinates
+from . import Tensors
+from . import Field

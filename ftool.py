@@ -144,7 +144,7 @@ def UTM_to_latlong(x,y,zone,hemisphere=1):
 	long = long0-(Q5-Q6+Q7)/np.cos(fp)
 #	print long
 	
-	return [hemisphere*lat/math.pi*180.,long/math.pi*180.]
+	return [hemisphere*lat/math.pi*180.,int/math.pi*180.]
 def latlong_to_UTM(lat,long):
 	'''Return UTM easting, northing, zone number and hemisphere corresponding to supplied latitude and longitude.
 	
@@ -166,16 +166,16 @@ def latlong_to_UTM(lat,long):
 	D0=0.021984404
 	E0=0.000312705
 	
-	UTM_zone=31+np.floor(long/6.)
+	UTM_zone=31+np.floor(int/6.)
 #	print UTM_zone
 	UTM_zone_CM = 6.*UTM_zone-183.
 #	print UTM_zone_CM
 	
-	P=(long-UTM_zone_CM)*math.pi/180.
+	P=(int-UTM_zone_CM)*math.pi/180.
 #	print P
 	Q=lat*math.pi/180.
 #	print Q
-	R=long*math.pi/180.
+	R=int*math.pi/180.
 #	print R
 	S=a*(1.-e*e)/(np.sqrt(1.-((e*np.sin(Q))**2))**3)
 #	print S
@@ -252,10 +252,10 @@ def SI(quantity,unit=None):
 			return (quantity-units[unit][1])*units[unit][0]
 	
 	except KeyError:
-		print unit +' not a valid unit for conversion'
+		print(unit +' not a valid unit for conversion')
 		return	
 def pyfehm_print(s,silent):
-	if not silent: print s
+	if not silent: print(s)
 #-----------------------------------------------------------------------------------------------------
 #------------------------------ FUNCTIONS AND CLASSES FOR INTERNAL USE -------------------------------
 #-----------------------------------------------------------------------------------------------------
@@ -269,7 +269,7 @@ class fpath(object):
 	def __getstate__(self):
 		return dict((k, getattr(self, k)) for k in self.__slots__)
 	def __setstate__(self, data_dict):
-		for (name, value) in data_dict.iteritems():
+		for (name, value) in data_dict.items():
 			setattr(self, name, value)
 	def update(self, wd):
 		'''called when work_dir is updated'''		
@@ -301,7 +301,7 @@ class fpath(object):
 			return
 		# check if absoulte or relative specification
 		path = value.split(slash)[:-1]
-		path = string.join(path,slash)
+		path = slash.join(path)
 		
 		absolute = False
 		if WINDOWS and path[1]==':': absolute = True
@@ -320,7 +320,7 @@ def dict_key_check(dict,keys,dict_name):
 	'''
 	returnFlag = False
 	ws = 'Key error in '+dict_name+'.\n'
-	for k in dict.keys():
+	for k in list(dict.keys()):
 		if k in ['sdepth','gdepth']:
 			continue
 		elif k not in keys:
@@ -329,8 +329,8 @@ def dict_key_check(dict,keys,dict_name):
 				matches = difflib.get_close_matches(k,keys)
 			else:
 				matches = difflib.get_close_matches(k,keys,cutoff = 0.5)
-			print k
-			print keys
+			print(k)
+			print(keys)
 			if len(matches)>0:
 				ws+=', did you mean?\n'
 				for match in matches:
@@ -338,7 +338,7 @@ def dict_key_check(dict,keys,dict_name):
 			else:
 				ws+='.\n'
 			returnFlag = True
-	if returnFlag: print ws
+	if returnFlag: print(ws)
 	return returnFlag
 def os_path(path):
 	if WINDOWS: path = path.replace('/','\\')
@@ -364,7 +364,7 @@ def flatten(l):
 	'''
 	import collections
 	for el in l:
-		if isinstance(el, collections.Iterable) and not isinstance(el, basestring):
+		if isinstance(el, collections.Iterable) and not isinstance(el, str):
 			for sub in flatten(el):
 				yield sub
 		else:
@@ -410,22 +410,22 @@ def sub_cubes(cube): 			# returns sub-cubes formed by sub-dividing the given cub
 def in_cube(pos,cube):
 	"""Tests if the 3-D point lies in an axis-aligned cube, defined as a two-element list of arrays
 	[bottom left front, top right back]."""
-	return all([cube[0][i]<=pos[i]<cube[1][i] for i in xrange(3)])
+	return all([cube[0][i]<=pos[i]<cube[1][i] for i in range(3)])
 def cubes_intersect(cube1,cube2):
 	"""Returns True if two cubes intersect."""
-	return all([(cube1[1][i]>=cube2[0][i]) and (cube2[1][i]>=cube1[0][i]) for i in xrange(2)])
+	return all([(cube1[1][i]>=cube2[0][i]) and (cube2[1][i]>=cube1[0][i]) for i in range(2)])
 def save_name(save='',variable='',time=0., node=0): 		# returns file name and extension for saving
 	pdf = False
 	if save:
 		save = save.split('.')
 		if len(save)==1: 
-			print 'No extension specified, default to .png'
+			print('No extension specified, default to .png')
 			ext = 'png'
-		elif len(save)>2: print 'Too many dots!'; return
+		elif len(save)>2: print('Too many dots!'); return
 		else:
 			if save[1] in ['png','eps','pdf']:
 				ext = save[1]
-			else: print 'Unrecognized extension'; return
+			else: print('Unrecognized extension'); return
 		if ext == 'pdf': ext = 'eps'; pdf = True
 		save_fname=save[0]+'.'+ext
 	else: 

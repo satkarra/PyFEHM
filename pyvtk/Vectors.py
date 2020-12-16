@@ -15,8 +15,8 @@ $Date: 2001-05-31 17:48:55 $
 Pearu Peterson
 """
 
-import DataSetAttr
-import common
+from . import DataSetAttr
+from . import common
 
 class Vectors(DataSetAttr.DataSetAttr):
     """Holds VTK Vectors.
@@ -43,12 +43,12 @@ class Vectors(DataSetAttr.DataSetAttr):
 def vectors_fromfile(f,n,sl):
     dataname = sl[0]
     datatype = sl[1].lower()
-    assert datatype in ['bit','unsigned_char','char','unsigned_short','short','unsigned_int','int','unsigned_long','long','float','double'],`datatype`
+    assert datatype in ['bit','unsigned_char','char','unsigned_short','short','unsigned_int','int','unsigned_long','long','float','double'],repr(datatype)
     vectors = []
     while len(vectors) < 3*n:
-        vectors += map(eval,common._getline(f).split(' '))
+        vectors += list(map(eval,common._getline(f).split(' ')))
     assert len(vectors) == 3*n
     return Vectors(vectors,dataname)
 
 if __name__ == "__main__":
-    print Vectors([[3,3],[4,3.],240,3,2]).to_string()
+    print(Vectors([[3,3],[4,3.],240,3,2]).to_string())

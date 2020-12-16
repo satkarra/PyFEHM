@@ -65,11 +65,11 @@ class fdflt(object):
 
 		# set this to the fehm executable to be used if no default assigned
 		self.fehm_path 				=	'c:\\path\\to\\fehm\\fehm.exe'
-		if os.name is not 'posix':
+		if os.name != 'posix':
 			self.paraview_path 			=	'paraview.exe'
 		else:
 			self.paraview_path 			=	'paraview'
-		if os.name is not 'posix':
+		if os.name != 'posix':
 			self.visit_path 			=	'visit.exe'
 		else:
 			self.visit_path 			=	'visit'
@@ -170,7 +170,7 @@ class fdflt(object):
 		self._check_rc()
 	def _check_rc(self):
 		# check if pyfehmrc file exists		
-		rc_lib = pkgutil.get_loader('fdflt').filename.split(os.sep)
+		rc_lib = pkgutil.get_loader('fdflt').path.split(os.sep)
 		rc_lib1 = os.sep.join(rc_lib[:-1])+os.sep+'.pyfehmrc'
 		rc_lib2 = os.sep.join(rc_lib[:-1])+os.sep+'pyfehmrc'
 		rc_home1 = os.path.expanduser('~')+os.sep+'.pyfehmrc'
@@ -195,21 +195,21 @@ class fdflt(object):
 				elif len(ln.split('&')) == 3:
 					self._update_dict(ln)
 				else:
-					print 'WARNING: unrecognized .pyfehmrc line \''+ln.strip()+'\''
+					print('WARNING: unrecognized .pyfehmrc line \''+ln.strip()+'\'')
 			else:
-				print 'WARNING: unrecognized .pyfehmrc line \''+ln.strip()+'\''
+				print('WARNING: unrecognized .pyfehmrc line \''+ln.strip()+'\'')
 	def _update_attribute(self,ln):
 		name,value = ln.split('&')
 		name,value = name.strip(), value.strip()
 		
-		attributelist = self.__dict__.keys()
+		attributelist = list(self.__dict__.keys())
 		
 		if name not in attributelist:
-			print 'ERROR: no attribute \''+name+'\''; return
+			print('ERROR: no attribute \''+name+'\''); return
 			
 		if isinstance(self.__dict__[name],dict):
-			print 'ERROR: \''+name+'\' a dictionary. To set a dictionary value supply the dictionary key in format:'
-			print 'dict_name : dict_key : value'
+			print('ERROR: \''+name+'\' a dictionary. To set a dictionary value supply the dictionary key in format:')
+			print('dict_name : dict_key : value')
 			return
 		
 		# translate None string
@@ -233,19 +233,19 @@ class fdflt(object):
 			elif value in ['False','0.','0'] or value == None:
 				self.__setattr__(name,False)
 			else:
-				print 'ERROR: unrecognized boolean type \''+value+'\''; return
+				print('ERROR: unrecognized boolean type \''+value+'\''); return
 	def _update_dict(self,ln):
 		name,key,value = ln.split('&')
 		name,key,value = name.strip(), key.strip(), value.strip()
 		
-		dictlist = [k for k in self.__dict__.keys() if type(self.__dict__[k]) is dict]
+		dictlist = [k for k in list(self.__dict__.keys()) if type(self.__dict__[k]) is dict]
 		
 		if name not in dictlist:
-			print 'ERROR: no dictionary \''+name+'\''; return
+			print('ERROR: no dictionary \''+name+'\''); return
 			
-		keys = self.__dict__[name].keys()
+		keys = list(self.__dict__[name].keys())
 		if key not in keys:
-			print 'ERROR: no such key \''+key+'\' in dictionary \''+name+'\''; return
+			print('ERROR: no such key \''+key+'\' in dictionary \''+name+'\''); return
 		
 		# translate None string
 		if value in ['','None','none']: value = None
@@ -281,7 +281,7 @@ class fdflt(object):
 			elif value in ['False','0.','0'] or value == None:
 				self.__dict__[name].__setitem__(key,False)
 			else:
-				print 'ERROR: unrecognized boolean type \''+value+'\''; return
+				print('ERROR: unrecognized boolean type \''+value+'\''); return
 		
 		
 		

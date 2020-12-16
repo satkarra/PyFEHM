@@ -19,6 +19,12 @@ Pearu Peterson
 import types
 import sys
 import struct
+from functools import reduce
+
+try:
+    from types import InstanceType
+except ImportError:
+    InstanceType = object
 
 def is_sequence(obj):
     """Check if obj is sequence."""
@@ -68,13 +74,13 @@ def is_float01(obj):
     return 0<=obj<=1
 
 def is_datasetattr(obj):
-    return type(obj) is types.InstanceType and isinstance(obj,DataSetAttr.DataSetAttr)
+    return isinstance(obj,DataSetAttr.DataSetAttr)
 def is_dataset(obj):
-    return type(obj) is types.InstanceType and isinstance(obj,DataSet.DataSet)
+    return isinstance(obj,DataSet.DataSet)
 def is_pointdata(obj):
-    return type(obj) is types.InstanceType and isinstance(obj,Data.PointData)
+    return isinstance(obj,Data.PointData)
 def is_celldata(obj):
-    return type(obj) is types.InstanceType and isinstance(obj,Data.CellData)
+    return isinstance(obj,Data.CellData)
 
 def _getline(f):
     l = ' '
@@ -105,7 +111,7 @@ class Common:
                 break
             frame = frame.f_back
             
-        print >>sys.stderr,'%s.%s:\n\t%s'%(self.__class__.__name__,n[:-1],m)
+        print('%s.%s:\n\t%s'%(self.__class__.__name__,n[:-1],m), file=sys.stderr)
     def warning(self,m=''):
         self._get_trace(m)
     def skipping(self,m=''):
@@ -140,8 +146,8 @@ class Common:
         if is_int(obj): return self.default_int
         if is_float(obj): return self.default_float
         if not is_sequence(obj):
-            raise ValueError,'expected int|float|non-empty sequence but got %s'\
-                  %(type(obj))
+            raise ValueError('expected int|float|non-empty sequence but got %s'\
+                  %(type(obj)))
         if not len(obj):
             self.warning('no data, no datatype, using int')
             r = 'int'
@@ -158,7 +164,7 @@ class Common:
         if obj is None and default is not None:
             self.warning('using default value (%s)'%(default))
             return self.get_seq(default)
-        raise ValueError,'expected sequence|number but got %s'%(type(obj))
+        raise ValueError('expected sequence|number but got %s'%(type(obj)))
     def get_seq_seq(self,obj,default=None):
         """Return sequence of sequences."""
         if is_sequence2(obj):
@@ -170,7 +176,7 @@ class Common:
         if is_sequence(default):
             n = len(default)
         else:
-            n = max(map(len,seq))
+            n = max(list(map(len,seq)))
             default = [default]*n
         ret = []
         flag = 0
@@ -192,9 +198,9 @@ class Common:
         (3 or more)-sequence -> (obj[0],obj[1],obj[2])
         """
         if not (default is not None \
-                and type(default) is types.TupleType \
+                and type(default) is tuple \
                 and len(default)==3):
-            raise ValueError,'argument default must be 3-tuple|None but got %s'%(default)
+            raise ValueError('argument default must be 3-tuple|None but got %s'%(default))
         if is_sequence(obj):
             n = len(obj)
             if n>3:
@@ -215,7 +221,7 @@ class Common:
         elif obj is None and default is not None:
             self.warning('filling with default value (%s) to obtain size=3'%(default[0]))
             return default
-        raise ValueError,'failed to construct 3-tuple from %s-%s'%(n,type(obj))
+        raise ValueError('failed to construct 3-tuple from %s-%s'%(n,type(obj)))
     def get_3_tuple_list(self,obj,default=None):
         """Return list of 3-tuples from
         sequence of a sequence,
@@ -263,7 +269,7 @@ class Common:
 
     def _get_nof_objs(self,seq):
         if is_sequence2(seq):
-            return reduce(lambda x,y:x+y,map(self._get_nof_objs,seq),0)
+            return reduce(lambda x,y:x+y,list(map(self._get_nof_objs,seq)),0)
             #return reduce(lambda x,y:x+y,[self._get_nof_objs(s) for s in seq],0)
         return len(seq)
 
@@ -289,23 +295,23 @@ class Common:
                 if fmt:
                     r = struct.pack('!'+fmt*len(seq),*seq)
                     return r
-        raise NotImplementedError,'format=%s, datatype=%s'%(format,datatype)
+        raise NotImplementedError('format=%s, datatype=%s'%(format,datatype))
 
     def float01_to_int255(self,seq):
         assert is_float01(seq)
         if is_sequence(seq):
-            return map(self.float01_to_int255,seq)
+            return list(map(self.float01_to_int255,seq))
             #return [self.float01_to_int255(l) for l in seq]
         else:
             return int(seq*255)
     def int255_to_float01(self,seq):
         assert is_int255(seq)
         if is_sequence(seq):
-            return map(self.int255_to_float01,seq)
+            return list(map(self.int255_to_float01,seq))
             #return [self.int255_to_float01(l) for l in seq]
         else:
             return round(seq/255.0,6)
 
-import Data
-import DataSet
-import DataSetAttr
+from . import Data
+from . import DataSet
+from . import DataSetAttr

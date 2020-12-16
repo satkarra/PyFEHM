@@ -16,4 +16,4 @@ p = Popen(args[0],stdout=PIPE)
 dat._diagnostic.stdout = p.stdout
 dat._diagnostic.poll = p.poll
 dat._diagnostic.construct_viewer() 
-for line in iter(p.stdout.readline, b''): print line.rstrip() 
+for line in iter(p.stdout.readline, b''): print(line.rstrip()) 

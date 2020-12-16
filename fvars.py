@@ -354,7 +354,7 @@ def dens(P,T,derivative=''):
 		       ZDV[9]*P*T*2)
 		dens_l = (ZL0*YL1-YL0*ZL1)/ZL0**2
 		dens_v = (ZV0*YV1-YV0*ZV1)/ZV0**2
-	else: print 'not a valid derivative'; return
+	else: print('not a valid derivative'); return
 	
 	if not co2Vars: return (dens_l,dens_v,np.array([]))
 	
@@ -563,7 +563,7 @@ def enth(P,T,derivative=''):
 		       ZEV[9]*P*T*2)
 		dens_l = (ZL0*YL1-YL0*ZL1)/ZL0**2
 		dens_v = (ZV0*YV1-YV0*ZV1)/ZV0**2
-	else: print 'not a valid derivative'; return
+	else: print('not a valid derivative'); return
 	
 	if not co2Vars: return (dens_l,dens_v,np.array([]))
 		
@@ -808,7 +808,7 @@ def visc(P,T,derivative=''):
 		       ZVV[9]*P*T*2)
 		dens_l = (ZL0*YL1-YL0*ZL1)/ZL0**2
 		dens_v = (ZV0*YV1-YV0*ZV1)/ZV0**2
-	else: print 'not a valid derivative'; return
+	else: print('not a valid derivative'); return
 	
 	# calculate co2 properties
 	if not derivative: k = 'viscosity'
@@ -938,7 +938,7 @@ def fluid_column(z,Tgrad,Tsurf,Psurf,iterations = 3):
 	if z[0] != 0: z = np.array([0,]+list(z))
 	
 	if isinstance(Tgrad,str): 		# interpret Tgrad as a down well temperature profile
-		if not os.path.isfile(Tgrad): print 'ERROR: cannot find temperature gradient file \''+Tgrad+'\'.'; return
+		if not os.path.isfile(Tgrad): print('ERROR: cannot find temperature gradient file \''+Tgrad+'\'.'); return
 		
 		tempfile = open(Tgrad,'r')
 		ln = tempfile.readline()
@@ -946,7 +946,7 @@ def fluid_column(z,Tgrad,Tsurf,Psurf,iterations = 3):
 		commaFlag = False; spaceFlag = False
 		if len(ln.split(',')) > 1: commaFlag = True
 		elif len(ln.split()) > 1: spaceFlag = True
-		if not commaFlag and not spaceFlag: print 'ERROR: incorrect formatting for \''+Tgrad+'\'. Expect first column depth (m) and second column temperature (degC), either comma or space separated.'; return
+		if not commaFlag and not spaceFlag: print('ERROR: incorrect formatting for \''+Tgrad+'\'. Expect first column depth (m) and second column temperature (degC), either comma or space separated.'); return
 		if commaFlag: tempdat = np.loadtxt(Tgrad,delimiter=',')
 		else: tempdat = np.loadtxt(Tgrad)
 		zt = tempdat[:,0]; tt = tempdat[:,1]
@@ -997,7 +997,7 @@ def co2_dens_sat_line(derivative=''):
 	"""
 
 	if not co2Vars: 
-		print "Error: CO2 property table not found"
+		print("Error: CO2 property table not found")
 		return
 	
 	# calculate co2 properties
@@ -1005,8 +1005,8 @@ def co2_dens_sat_line(derivative=''):
 	elif derivative in ['P','pressure']: k = 'dddp'
 	elif derivative in ['T','temperature']: k = 'dddt'
 	
-	print 'P T liquid-'+k+' gas-'+k
+	print('P T liquid-'+k+' gas-'+k)
 	for p,t,l,g in zip(co2_sat_P, co2_sat_T, co2l_arrays[k], co2g_arrays[k]):
-		print p,t,l,g
+		print(p,t,l,g)
 
-	return zip(co2_sat_P, co2_sat_T, co2l_arrays[k], co2g_arrays[k])
+	return list(zip(co2_sat_P, co2_sat_T, co2l_arrays[k], co2g_arrays[k]))

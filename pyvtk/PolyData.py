@@ -15,8 +15,8 @@ $Date: 2002-11-19 20:40:11 $
 Pearu Peterson
 """
 
-import DataSet
-import common
+from . import DataSet
+from . import common
 
 class PolyData(DataSet.DataSet):
     """
@@ -51,7 +51,7 @@ class PolyData(DataSet.DataSet):
         sz = len(self.points)
         for k in ['vertices','lines','polygons','triangle_strips']:
             if self._check_int_seq(getattr(self,k),sz):
-                raise ValueError,'%s must be (seq of seq|seq) integers less than %s'%(k,sz)
+                raise ValueError('%s must be (seq of seq|seq) integers less than %s'%(k,sz))
 
     def to_string(self, format='ascii'):
         t = self.get_datatype(self.points)
@@ -87,14 +87,14 @@ def polydata_fromfile(f,self):
     l = common._getline(f)
     k,n,datatype = [s.strip().lower() for s in l.split(' ')]
     if k!='points':
-        raise ValueError, 'expected points but got %s'%(`k`)
+        raise ValueError('expected points but got %s'%(repr(k)))
     n = eval(n)
-    assert datatype in ['bit','unsigned_char','char','unsigned_short','short','unsigned_int','int','unsigned_long','long','float','double'],`datatype`
+    assert datatype in ['bit','unsigned_char','char','unsigned_short','short','unsigned_int','int','unsigned_long','long','float','double'],repr(datatype)
 
     self.message('\tgetting %s points'%n)
     while len(points) < 3*n:
         l = common._getline(f)
-        points += map(eval,l.split(' '))
+        points += list(map(eval,l.split(' ')))
     assert len(points)==3*n
     while 1:
         l = common._getline(f)
@@ -105,19 +105,19 @@ def polydata_fromfile(f,self):
         if k not in ['vertices','lines','polygons','triangle_strips']:
             break
         assert len(sl)==3
-        n,size = map(eval,[sl[1],sl[2]])
+        n,size = list(map(eval,[sl[1],sl[2]]))
         lst = []
         while len(lst) < size:
             l = common._getline(f)
-            lst += map(eval,l.split(' '))
+            lst += list(map(eval,l.split(' ')))
         assert len(lst)==size
         lst2 = []
         j = 0
         for i in range(n):
             lst2.append(lst[j+1:j+lst[j]+1])
             j += lst[j]+1
-        exec '%s = lst2'%k
+        exec('%s = lst2'%k)
     return PolyData(points,vertices,lines,polygons,triangle_strips),l
 
 if __name__ == "__main__":
-    print PolyData([[1,2],[2,4],4,5.4],[[1],[0]],[],[1,2,3])
+    print(PolyData([[1,2],[2,4],4,5.4],[[1],[0]],[],[1,2,3]))

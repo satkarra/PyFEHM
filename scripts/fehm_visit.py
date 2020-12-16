@@ -46,7 +46,7 @@ if options.contname: c = fcontour(options.contname)
 if options.exename: exe = options.exename
 elif dflt.visit_path: exe = dflt.visit_path
 else:
-	print "Error: Executable not defined using -e (--exe) option or in pyfehmrc file"
+	print("Error: Executable not defined using -e (--exe) option or in pyfehmrc file")
 	sys.exit(0)
 #zscale = 1.
 #if options.zscale: zscale = float(options.zscale)

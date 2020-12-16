@@ -343,7 +343,7 @@ class fcontour(object): 					# Reading and plotting methods associated with cont
 			if 'mat_node' in file: mat_file = file
 		
 		if self._nearest or latest or first:
-			files = filter(os.path.isfile, glob(filename))
+			files = list(filter(os.path.isfile, glob(filename)))
 			if mat_file: files.remove(mat_file)
 			files.sort(key=lambda x: os.path.getmtime(x))
 			files2 = []
@@ -462,26 +462,26 @@ class fcontour(object): 					# Reading and plotting methods associated with cont
 			self._z = np.unique(self[self.times[0]]['z'])
 			self._zmin,self._zmax = np.min(self.z), np.max(self.z)
 		if dflt.parental_cont:
-			print ''
-			print '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-			print 'WARNING:'
-			print ''
-			print 'Contour data is indexed using the Pythonic convention in which the first index is 0. FEHM node numbering convention begins at 1.'
-			print ''
-			print 'THEREFORE, to get the correct contour value for a particular node, you need to pass the node index MINUS 1. Using node index to access contour data will return incorrect values.'
-			print ''
-			print 'For example:'
-			print '>>> node10 = dat.grid.node[10]'
-			print '>>> c = fcontour(\'*.csv\')'
-			print '>>> T_node10 = c[c.times[-1]][\'T\'][node10.index - 1]'
-			print '  or'
-			print '>>> T_node10 = c[c.times[-1]][\'T\'][9]'
-			print 'will return the correct value for node 10.'
-			print ''
-			print 'Do not turn off this message unless you understand how to correctly access nodal values from contour data.' 
-			print 'To turn off this message, open the environment file \'fdflt.py\' and set self.parental_cont = False'
-			print '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-			print ''
+			print('')
+			print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+			print('WARNING:')
+			print('')
+			print('Contour data is indexed using the Pythonic convention in which the first index is 0. FEHM node numbering convention begins at 1.')
+			print('')
+			print('THEREFORE, to get the correct contour value for a particular node, you need to pass the node index MINUS 1. Using node index to access contour data will return incorrect values.')
+			print('')
+			print('For example:')
+			print('>>> node10 = dat.grid.node[10]')
+			print('>>> c = fcontour(\'*.csv\')')
+			print('>>> T_node10 = c[c.times[-1]][\'T\'][node10.index - 1]')
+			print('  or')
+			print('>>> T_node10 = c[c.times[-1]][\'T\'][9]')
+			print('will return the correct value for node 10.')
+			print('')
+			print('Do not turn off this message unless you understand how to correctly access nodal values from contour data.') 
+			print('To turn off this message, open the environment file \'fdflt.py\' and set self.parental_cont = False')
+			print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+			print('')
 	def _detect_format(self,headers):
 		if headers[0].startswith('TITLE ='):		# check for TEC output
 			self._format = 'tec'
@@ -500,7 +500,7 @@ class fcontour(object): 					# Reading and plotting methods associated with cont
 		for header in headers:
 			header = header.strip().split(' : ')
 			for key in header[1:]: 
-				if key in cont_var_names_avs.keys():
+				if key in list(cont_var_names_avs.keys()):
 					var = cont_var_names_avs[key]
 				else: var = key
 				self._variables.append(var)
@@ -537,7 +537,7 @@ class fcontour(object): 					# Reading and plotting methods associated with cont
 			self._variables.append('n')
 			for ln in lns:
 				varname = ln.strip().split(',')[0]
-				if varname in cont_var_names_avs.keys():
+				if varname in list(cont_var_names_avs.keys()):
 					var = cont_var_names_avs[varname]
 				else: var = varname
 				if var not in self._variables: self._variables.append(var)
@@ -574,7 +574,7 @@ class fcontour(object): 					# Reading and plotting methods associated with cont
 			for key in header: 
 				varname = key.split('"')[0]
 				varname = varname.strip()
-				if varname in cont_var_names_surf.keys():
+				if varname in list(cont_var_names_surf.keys()):
 					var = cont_var_names_surf[varname]
 				else: var = varname
 				if var not in self._variables: self._variables.append(var)
@@ -624,7 +624,7 @@ class fcontour(object): 					# Reading and plotting methods associated with cont
 			header = header.split(' "')
 			for key in header[1:]: 
 				varname = key.split('"')[0].strip()
-				if varname in cont_var_names_tec.keys():
+				if varname in list(cont_var_names_tec.keys()):
 					var = cont_var_names_tec[varname]
 				else: var = varname
 				
@@ -1426,7 +1426,7 @@ class fcontour(object): 					# Reading and plotting methods associated with cont
 			outdat = dict([(k,[]) for k in ks])
 			for t in self.times:
 				dat = self[t]
-				for k in outdat.keys():
+				for k in list(outdat.keys()):
 					outdat[k].append(dat[k][nd])
 		elif time is None:
 			if variable not in self.variables: 
@@ -1515,15 +1515,15 @@ class fcontour(object): 					# Reading and plotting methods associated with cont
 	def _set_zmax(self,value): self._zmax = value
 	zmax = property(_get_zmax, _set_zmax) #: (*fl64*) Maximum nodal z-coordinate for grid.
 	def _get_information(self):
-		print 'FEHM contour output - format '+self._format
-		print '	call format: fcontour[time][variable][node_index-1]'
+		print('FEHM contour output - format '+self._format)
+		print('	call format: fcontour[time][variable][node_index-1]')
 		prntStr =  '	times ('+str(len(self.times))+'): '
 		for time in self.times: prntStr += str(time)+', '
-		print prntStr[:-2]+' days'
+		print(prntStr[:-2]+' days')
 		prntStr = '	variables: '
 		for var in self.variables: prntStr += str(var)+', '
 		for var in self.user_variables: prntStr += str(var)+', '
-		print prntStr
+		print(prntStr)
 	what = property(_get_information) #:(*str*) Print out information about the fcontour object.
 class fhistory(object):						# Reading and plotting methods associated with history output data.
 	'''History output information object.
@@ -1778,17 +1778,17 @@ class fhistory(object):						# Reading and plotting methods associated with hist
 	def _get_nodes(self): return self._nodes
 	nodes = property(_get_nodes)	#: (*lst[fl64]*) List of node indices for which output data are available.
 	def _get_information(self):
-		print 'FEHM history output - format '+self._format
-		print '	call format: fhistory[variable][node][time_index]'
+		print('FEHM history output - format '+self._format)
+		print('	call format: fhistory[variable][node][time_index]')
 		prntStr = '	nodes: '
 		for nd in self.nodes: prntStr += str(nd)+', '
-		print prntStr
+		print(prntStr)
 		prntStr =  '	times ('+str(len(self.times))+'): '
 		for time in self.times: prntStr += str(time)+', '
-		print prntStr[:-2]+' days'
+		print(prntStr[:-2]+' days')
 		prntStr = '	variables: '
 		for var in self.variables: prntStr += str(var)+', '
-		print prntStr
+		print(prntStr)
 	what = property(_get_information) #:(*str*) Print out information about the fhistory object.
 class fzoneflux(fhistory): 					# Derived class of fhistory, for zoneflux output
 	'''Zone flux history output information object.
@@ -2041,7 +2041,7 @@ class multi_pdf(object):
 		if isinstance(files,list):
 			self._files = dict([(i+1,file) for i,file in enumerate(files)])
 		elif isinstance(files,dict):
-			ks = files.keys()
+			ks = list(files.keys())
 			for k in ks:
 				if not isinstance(k,int):pyfehm_print('ERROR: Dictionary keys must be integers.',self._silent);return
 			self._files = files
@@ -2058,11 +2058,11 @@ class multi_pdf(object):
 		
 		'''
 		if len(filename.split('.'))==1: filename += '.eps'
-		if not os.path.isfile(filename): print 'WARNING: '+filename+' not found.'; return		
-		if not filename.endswith('.eps'): print 'WARNING: Non EPS format not supported.'
+		if not os.path.isfile(filename): print('WARNING: '+filename+' not found.'); return		
+		if not filename.endswith('.eps'): print('WARNING: Non EPS format not supported.')
 		
-		if pagenum and pagenum in self.files.keys():
-			print 'WARNING: Replacing '+self.files[pagenum]
+		if pagenum and pagenum in list(self.files.keys()):
+			print('WARNING: Replacing '+self.files[pagenum])
 			self.files[pagenum] = filename
 		else: 
 			if not pagenum: pagenum = self._pagemax+1
@@ -2076,24 +2076,24 @@ class multi_pdf(object):
 		:type pagenum: int
 		'''
 		if len(filename.split('.'))==1: filename += '.eps'
-		if not os.path.isfile(filename): print 'WARNING: '+filename+' found.'; return
-		if not filename.endswith('.eps'): print 'WARNING: Non EPS format not supported.'
+		if not os.path.isfile(filename): print('WARNING: '+filename+' found.'); return
+		if not filename.endswith('.eps'): print('WARNING: Non EPS format not supported.')
 			
 		if pagenum > self._pagemax: self.add(filename); return
-		ks = self._files.keys()
+		ks = list(self._files.keys())
 		self._files = dict([(k,self._files[k]) for k in ks if k < pagenum]+
 		[(pagenum,filename)]+[(k+1,self._files[k]) for k in ks if k >= pagenum])
 	def make(self):
 		'''Construct the pdf.'''
 		cs = self.combineString + ' -dBATCH -dNOPAUSE -sDEVICE=pdfwrite -sOutputFile='+self.save
-		for i in np.sort(self.files.keys()):
-			if not self.files[i].endswith('.eps'): print 'WARNING: Cannot combine '+self.files[i]+'. EPS format required. Skipping...'; continue
+		for i in np.sort(list(self.files.keys())):
+			if not self.files[i].endswith('.eps'): print('WARNING: Cannot combine '+self.files[i]+'. EPS format required. Skipping...'); continue
 			if len(self.files[i].split()) != 1:
 				cs += ' "'+self.files[i]+'"'
 			else:
 				cs += ' '+self.files[i]
 		os.system(cs)
-		for i in np.sort(self.files.keys()): 
+		for i in np.sort(list(self.files.keys())): 
 			if len(self.files[i].split()) != 1:
 				os.system(delStr+' "'+self.files[i]+'"')
 			else:
@@ -2104,9 +2104,9 @@ class multi_pdf(object):
 	def _get_files(self): return self._files
 	files = property(_get_files) #: (*lst[str]*) List of eps files to be assembled into pdf.
 	def _get_pagemax(self): 
-		ks = self._files.keys()
+		ks = list(self._files.keys())
 		for k in ks:
-			if not isinstance(k,int): print 'ERROR: Non integer dictionary key'; return
+			if not isinstance(k,int): print('ERROR: Non integer dictionary key'); return
 		if len(ks) == 0: return 0
 		return np.max(ks)
 	_pagemax = property(_get_pagemax)
@@ -2159,7 +2159,7 @@ class fUnstructuredGrid(pv.UnstructuredGrid):
 		tps = []
 		r = []
 		sz = 0
-		for k in self._vtk_cell_types_map.keys():
+		for k in list(self._vtk_cell_types_map.keys()):
 			kv = getattr(self,k)
 			if kv==[] or kv[0]==[]: continue
 			s = self.seq_to_string([[len(v)]+list(v) for v in kv],format,'int')
@@ -2199,24 +2199,24 @@ class fVtkData(pv.VtkData):
 		"""
 		written_files = []
 		if not pv.common.is_string(filename):
-			raise TypeError,'argument filename must be string but got %s'%(type(filename))
+			raise TypeError('argument filename must be string but got %s'%(type(filename)))
 		if format not in ['ascii','binary']:
-			raise TypeError,'argument format must be ascii | binary'
+			raise TypeError('argument format must be ascii | binary')
 		filename = filename.strip()
 		if not filename:
-			raise ValueError,'filename must be non-empty string'
+			raise ValueError('filename must be non-empty string')
 		if filename[-4:]!='.vtk':
 			filename += '.vtk'
 		
 		# first write material properties file
 		filename_int = ''.join(filename[:-4]+'_mat.vtk')
 		f = open(filename_int,'wb')
-		f.write(self.to_string(format=format,material=True))
+		f.write(self.to_string(format=format,material=True).encode('utf-8'))
 		f.close()
 		written_files.append(filename_int)
 		
 		# write contour output file
-		times = np.sort(self.contour.keys())
+		times = np.sort(list(self.contour.keys()))
 		for i,time in enumerate(times):
 			if len(times)>1:
 				filename_int = ''.join(filename[:-4]+'.%04i'%i+'.vtk')
@@ -2224,7 +2224,7 @@ class fVtkData(pv.VtkData):
 				filename_int = filename
 			#print 'Creating file',`filename`
 			f = open(filename_int,'wb')
-			f.write(self.to_string(time=time,format=format))
+			f.write(self.to_string(time=time,format=format).encode('utf-8'))
 			f.close()
 			written_files.append(filename_int)
 		return written_files
@@ -2233,14 +2233,14 @@ class fVtkData(pv.VtkData):
 		"""
 		written_files = []
 		if not pv.common.is_string(filename):
-			raise TypeError,'argument filename must be string but got %s'%(type(filename))
+			raise TypeError('argument filename must be string but got %s'%(type(filename)))
 		if format not in ['ascii','binary']:
-			raise TypeError,'argument format must be ascii | binary'
+			raise TypeError('argument format must be ascii | binary')
 		filename = filename.strip()
 		
 		# first write material properties file
 		f = open(filename,'wb')
-		f.write(self.to_string(format=format,material=True))
+		f.write(self.to_string(format=format,material=True).encode('utf-8'))
 		f.close()
 class fvtk(object):
 	def __init__(self,parent,filename,contour,diff,zscale,spatial_derivatives,time_derivatives):
@@ -2261,7 +2261,7 @@ class fvtk(object):
 	def __getstate__(self):
 		return dict((k, getattr(self, k)) for k in self.__slots__)
 	def __setstate__(self, data_dict):
-		for (name, value) in data_dict.iteritems():
+		for (name, value) in data_dict.items():
 			setattr(self, name, value)
 	def assemble(self):		
 		"""Assemble all information in pyvtk objects."""			
@@ -2290,7 +2290,7 @@ class fvtk(object):
 		elif len(cns[0]) == 8:
 			self.data = fVtkData(fUnstructuredGrid(nds,hexahedron=cns),'PyFEHM VTK model output')
 		else:
-			print "ERROR: Number of connections in connectivity not recognized: "+str(len(cns[0]))
+			print("ERROR: Number of connections in connectivity not recognized: "+str(len(cns[0])))
 			return
 		
 		# grid information
@@ -2358,9 +2358,9 @@ class fvtk(object):
 				if var in self.contour.variables:
 					if time != self.contour.times[0] and var in ['x','y','z','n']: continue
 				else:
-					if var not in self.contour[time].keys(): continue
+					if var not in list(self.contour[time].keys()): continue
 					if self.diff:
-						if var not in self.contour[time0].keys(): continue
+						if var not in list(self.contour[time0].keys()): continue
 				
 				# field for contour variable
 				if var not in self.variables: self.variables.append(var)
@@ -2421,7 +2421,7 @@ class fvtk(object):
 		"""		
 		nds = np.array([nd.position for nd in self.parent.grid.nodelist])
 		zmin = np.min(nds[:,2])
-		for k in wells.keys():
+		for k in list(wells.keys()):
 			well = wells[k]
 			if isinstance(well,np.ndarray):
 				nds = well
@@ -2435,7 +2435,7 @@ class fvtk(object):
 				grid.material.append(pv.Scalars(well.data[:,1] ,name='T',lookup_table='default'))
 			filename=k+'_wells.vtk'
 			grid.tofilewell(filename)
-		self.wells = wells.keys()
+		self.wells = list(wells.keys())
 	def initial_display(self,show):
 		"""Determines what variable should be initially displayed."""
 		mat_vars = ['n','x','y','z','perm_x','perm_y','perm_z','porosity','density','cond_x','cond_y','cond_z']
@@ -2448,10 +2448,10 @@ class fvtk(object):
 		
 		# check for unspecified coordinate in potentially anisotropic properties
 		if show in ['permeability','perm']:
-			print 'NOTE: plotting z-component of permeability, for other components specify show=\'perm_x\', etc.'
+			print('NOTE: plotting z-component of permeability, for other components specify show=\'perm_x\', etc.')
 			show = 'perm_z'
 		if show in ['conducitivity','cond']:
-			print 'NOTE: plotting z-component of conductivity, for other components specify show=\'cond_x\', etc.'
+			print('NOTE: plotting z-component of conductivity, for other components specify show=\'cond_x\', etc.')
 			show = 'cond_z'
 		
 		# check if material property or contour output requested for display
@@ -2472,14 +2472,14 @@ class fvtk(object):
 			self.default_material_property = 'perm_x' 		# default 
 			self.default_material_lims = self.__getattribute__('perm_x_lim')
 		else:
-			print 'ERROR: requested property or variable does not exist, available options are...'
-			print 'Material properties:'
+			print('ERROR: requested property or variable does not exist, available options are...')
+			print('Material properties:')
 			for mat in mat_vars:
-				print '  - '+mat
-			print 'Contour output variables:'
+				print('  - '+mat)
+			print('Contour output variables:')
 			for var in cont_vars:
-				print '  - '+var
-			print ''
+				print('  - '+var)
+			print('')
 	def startup_script(self,nodes):
 		x0,x1 = self.parent.grid.xmin, self.parent.grid.xmax
 		y0,y1 = self.parent.grid.ymin, self.parent.grid.ymax
@@ -2909,18 +2909,18 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
 	in1 = deepcopy(in1)
 	in2 = deepcopy(in2)
 	if type(in1) is not type(in2):
-		print "ERROR: fpost objects are not of the same type: "+str(type(in1))+" and "+str(type(in2))
+		print("ERROR: fpost objects are not of the same type: "+str(type(in1))+" and "+str(type(in2)))
 		return
 	if isinstance(in1, fcontour) or isinstance(in1, fhistory) or 'foutput' in str(in1.__class__):
 		# Find common timesclear
 		t = np.intersect1d(in1.times,in2.times)
 		if len(t) == 0:
-			print "ERROR: fpost object times do not have any matching values"
+			print("ERROR: fpost object times do not have any matching values")
 			return
 		if len(times) > 0:
 			times = np.intersect1d(times,t)
 			if len(times) == 0:
-				print "ERROR: provided times are not coincident with fpost object times"
+				print("ERROR: provided times are not coincident with fpost object times")
 				return
 		else:
 			times = t
@@ -2929,12 +2929,12 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
 		# Find common variables
 		v = np.intersect1d(in1.variables,in2.variables)
 		if len(v) == 0:
-			print "ERROR: fcontour object variables do not have any matching values"
+			print("ERROR: fcontour object variables do not have any matching values")
 			return
 		if len(variables) > 0:
 			variables = np.intersect1d(variables,v)
 			if len(variables) == 0:
-				print "ERROR: provided variables are not coincident with fcontour object variables"
+				print("ERROR: provided variables are not coincident with fcontour object variables")
 				return
 		else:
 			variables = v
@@ -2956,12 +2956,12 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
 		# Find common variables
 		v = np.intersect1d(in1.variables, in2.variables)
 		if len(v) == 0:
-			print "ERROR: fhistory object variables do not have any matching values"
+			print("ERROR: fhistory object variables do not have any matching values")
 			return
 		if len(variables) > 0:
 			variables = np.intersect1d(variables,v)
 			if len(variables) == 0:
-				print "ERROR: provided variables are not coincident with fhistory object variables"
+				print("ERROR: provided variables are not coincident with fhistory object variables")
 				return
 		else:
 			variables = v
@@ -2969,12 +2969,12 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
 		#Find common nodes.
 		n = np.intersect1d(in1.nodes, in2.nodes)
 		if len(n) == 0:
-			print "ERROR: fhistory object nodes do not have any matching values"
+			print("ERROR: fhistory object nodes do not have any matching values")
 			return
 		if len(nodes) > 0:
 			nodes = np.intersect1d(nodes,n)
 			if len(nodes) == 0:
-				print "ERROR: provided nodes are not coincident with fhistory object nodes"
+				print("ERROR: provided nodes are not coincident with fhistory object nodes")
 				return
 		else:
 			nodes = n
@@ -3015,12 +3015,12 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
 		# Find common components
 		c = np.intersect1d(in1.components,in2.components)
 		if len(c) == 0:
-			print "ERROR: foutput object components do not have any matching values"
+			print("ERROR: foutput object components do not have any matching values")
 			return
 		if len(components) > 0:
 			components = np.intersect1d(components,c)
 			if len(components) == 0:
-				print "ERROR: provided components are not coincident with foutput object components"
+				print("ERROR: provided components are not coincident with foutput object components")
 				return
 		else:
 			components = c		
@@ -3032,35 +3032,34 @@ def fdiff( in1, in2, format='diff', times=[], variables=[], components=[], nodes
 		for cp in components:
 			if format is 'diff':
 				if len(variables):
-					out._node[cp] = dict([(n,dict([(v,np.array(in1._node[cp][n][v]) - np.array(in2._node[cp][n][v])) for v in in1._node[cp][n].keys() if v in variables])) for n in in1.nodes])
+					out._node[cp] = dict([(n,dict([(v,np.array(in1._node[cp][n][v]) - np.array(in2._node[cp][n][v])) for v in list(in1._node[cp][n].keys()) if v in variables])) for n in in1.nodes])
 				else:
-					out._node[cp] = dict([(n,dict([(v,np.array(in1._node[cp][n][v]) - np.array(in2._node[cp][n][v])) for v in in1._node[cp][n].keys()])) for n in in1.nodes])
+					out._node[cp] = dict([(n,dict([(v,np.array(in1._node[cp][n][v]) - np.array(in2._node[cp][n][v])) for v in list(in1._node[cp][n].keys())])) for n in in1.nodes])
 			elif format is 'relative':
 				if len(variables):
-					out._node[cp] = dict([(n,dict([(v,(np.array(in1._node[cp][n][v]) - np.array(in2._node[cp][n][v]))/np.abs(in2._node[cp][n][v])) for v in in1._node[cp][n].keys() if v in variables])) for n in in1.nodes])
+					out._node[cp] = dict([(n,dict([(v,(np.array(in1._node[cp][n][v]) - np.array(in2._node[cp][n][v]))/np.abs(in2._node[cp][n][v])) for v in list(in1._node[cp][n].keys()) if v in variables])) for n in in1.nodes])
 				else:
-					out._node[cp] = dict([(n,dict([(v,(np.array(in1._node[cp][n][v]) - np.array(in2._node[cp][n][v]))/np.abs(in2._node[cp][n][v])) for v in in1._node[cp][n].keys()])) for n in in1.nodes])
+					out._node[cp] = dict([(n,dict([(v,(np.array(in1._node[cp][n][v]) - np.array(in2._node[cp][n][v]))/np.abs(in2._node[cp][n][v])) for v in list(in1._node[cp][n].keys())])) for n in in1.nodes])
 			elif format is 'percent':
 				if len(variables):
-					out._node[cp] = dict([(n,dict([(v,100*np.abs((np.array(in1._node[cp][n][v]) - np.array(in2._node[cp][n][v]))/in2._node[cp][n][v])) for v in in1._node[cp][n].keys() if v in variables])) for n in in1.nodes])
+					out._node[cp] = dict([(n,dict([(v,100*np.abs((np.array(in1._node[cp][n][v]) - np.array(in2._node[cp][n][v]))/in2._node[cp][n][v])) for v in list(in1._node[cp][n].keys()) if v in variables])) for n in in1.nodes])
 				else:
-					out._node[cp] = dict([(n,dict([(v,100*np.abs((np.array(in1._node[cp][n][v]) - np.array(in2._node[cp][n][v]))/in2._node[cp][n][v])) for v in in1._node[cp][n].keys()])) for n in in1.nodes])
+					out._node[cp] = dict([(n,dict([(v,100*np.abs((np.array(in1._node[cp][n][v]) - np.array(in2._node[cp][n][v]))/in2._node[cp][n][v])) for v in list(in1._node[cp][n].keys())])) for n in in1.nodes])
 						
 		return out
 		
 def sort_tec_files(files):
 	# sort first by number, then by type
-	from string import join
 	for file in files:
 		if not file.endswith('.dat'): return files
-	paths = [join(file.split(os.sep)[:-1],os.sep) for file in files]
+	paths = [os.sep.join(file.split(os.sep)[:-1]) for file in files]
 	files = [file.split(os.sep)[-1] for file in files]
 	
 	times = []
 	for file in files: 
 		for type in ['_days_sca_node','_days_vec_node','_days_hf_node','_days_con_node','_sca_node','_vec_node','_hf_node','_con_node']:
 			if type in file: 				
-				times.append(float(join(file.split(type)[0].split('.')[1:],'.')))
+				times.append(float('.'.join(file.split(type)[0].split('.')[1:])))
 				break
 	times = sorted(enumerate(times), key=lambda x: x[1])
 	

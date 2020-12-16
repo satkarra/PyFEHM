@@ -164,8 +164,8 @@ class wellbore_model(fdata):
 		self.work_dir = work_dir
 				
 		# 2. create a grid
-		if xL == 0 or zL == 0: print 'Error: grid dimensions must be non-zero'; return
-		if wellbore_radius+casing_width+pipe_width>xL: print 'Error: No room for reservoir rock.'; return
+		if xL == 0 or zL == 0: print('Error: grid dimensions must be non-zero'); return
+		if wellbore_radius+casing_width+pipe_width>xL: print('Error: No room for reservoir rock.'); return
 		#if (abs(feedzone_depth)+feedzone_width/2)>abs(zL): print 'Error: model not deep enough to include feedzone.'; return
 		
 		if gridfilename: meshname = gridfilename
@@ -293,13 +293,13 @@ class wellbore_model(fdata):
 		self.cont.variables.append(['temperature','pressure','xyz','liquid'])
 	def _set_reservoir_temperature(self):
 		if isinstance(self._initial_temperature,str):
-			if not os.path.isfile(self._initial_temperature): print 'ERROR: '+self._initial_temperature+' does not exist.'; return
+			if not os.path.isfile(self._initial_temperature): print('ERROR: '+self._initial_temperature+' does not exist.'); return
 			tempfile = open(self._initial_temperature,'r')
 			lns = tempfile.readlines()
 			commaFlag = False; spaceFlag = False
 			if len(lns[0].split(',')) > 1: commaFlag = True
 			elif len(lns[0].split()) > 1: spaceFlag = True
-			if not commaFlag and not spaceFlag: print 'ERROR: incorrect formatting for '+self._initial_temperature+'. Expect first column depth (m) and second column temperature (degC), either comma or space separated.'; return
+			if not commaFlag and not spaceFlag: print('ERROR: incorrect formatting for '+self._initial_temperature+'. Expect first column depth (m) and second column temperature (degC), either comma or space separated.'); return
 			zs = []; Ts = []
 			for ln in lns:
 				if commaFlag: ln = ln.split(',')
@@ -515,7 +515,7 @@ class wellbore_model(fdata):
 				
 				ylims = ax.get_ylim()
 				for profile,col in zip(Twell_profiles,cols[:len(Twell_profiles)]):
-					if not os.path.isfile(profile): print 'WARNING: '+profile+' not found'; continue
+					if not os.path.isfile(profile): print('WARNING: '+profile+' not found'); continue
 					dat = np.loadtxt(profile)
 					
 					zs = dat[:,0]; Ts = dat[:,1]					

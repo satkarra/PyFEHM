@@ -17,8 +17,8 @@ Pearu Peterson
 
 __version__ = "$Id: ColorScalars.py,v 1.2 2001-05-31 17:48:54 pearu Exp $"
 
-import common
-import DataSetAttr
+from . import common
+from . import DataSetAttr
 
 class ColorScalars(DataSetAttr.DataSetAttr):
     """Holds VTK color scalars.
@@ -55,11 +55,11 @@ def color_scalars_fromfile(f,n,sl):
     nvals = eval(sl[1])
     scalars = []
     while len(scalars)<nvals*n:
-        scalars += map(eval,common._getline(f).split(' '))
+        scalars += list(map(eval,common._getline(f).split(' ')))
     assert len(scalars)==nvals*n
     scalars2 = []
     for i in range(0,len(scalars),nvals):
         scalars2.append(scalars[i:i+nvals])
     return ColorScalars(scalars2,dataname)
 if __name__ == "__main__":
-    print ColorScalars([[3,3],[4,3],240,3,2]).to_string()
+    print(ColorScalars([[3,3],[4,3],240,3,2]).to_string())

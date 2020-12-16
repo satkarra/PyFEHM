@@ -17,8 +17,8 @@ Pearu Peterson
 
 __version__ = "$Id: Scalars.py,v 1.3 2001-05-31 17:48:54 pearu Exp $"
 
-import DataSetAttr
-import common
+from . import DataSetAttr
+from . import common
 
 class Scalars(DataSetAttr.DataSetAttr):
     """Holds VTK scalars.
@@ -48,7 +48,7 @@ class Scalars(DataSetAttr.DataSetAttr):
 def scalars_fromfile(f,n,sl):
     dataname = sl[0]
     datatype = sl[1].lower()
-    assert datatype in ['bit','unsigned_char','char','unsigned_short','short','unsigned_int','int','unsigned_long','long','float','double'],`datatype`
+    assert datatype in ['bit','unsigned_char','char','unsigned_short','short','unsigned_int','int','unsigned_long','long','float','double'],repr(datatype)
     if len(sl)>2:
         numcomp = eval(sl[2])
     else:
@@ -59,9 +59,9 @@ def scalars_fromfile(f,n,sl):
     tablename = l[1]
     scalars = []
     while len(scalars) < n:
-        scalars += map(eval,common._getline(f).split(' '))
+        scalars += list(map(eval,common._getline(f).split(' ')))
     assert len(scalars)==n
     return Scalars(scalars,dataname,tablename)
 
 if __name__ == "__main__":
-    print Scalars([3,4,240]).to_string('binary')
+    print(Scalars([3,4,240]).to_string('binary'))

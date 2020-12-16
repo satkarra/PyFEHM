@@ -6,7 +6,7 @@ from fpost import*
 # 7.3.2 Setting up the simulations
 import multiprocessing
 
-models = range(1,13)
+models = list(range(1,13))
 processors = 5
 
 params = [

@@ -922,7 +922,7 @@ class fgrid(object):				#Grid object.
 				con._geom_coef = areas[1]/(con.distance/2.)
 			elif N[2]>N[1] and N[2]>N[0]:	
 				con._geom_coef = areas[2]/(con.distance/2.)
-	def make(self,gridfilename,x,y,z,full_connectivity=True,octree=False):
+	def make(self,x=[0,1],y=[0,1],z=[0,1],gridfilename='grid.inp',full_connectivity=True,octree=False,radial=False):
 		""" Generates an orthogonal mesh for input node positions. 
 		
 		The mesh is constructed using the ``fgrid.``\ **fmake** object and an FEHM grid file is written for the mesh.
@@ -945,7 +945,6 @@ class fgrid(object):				#Grid object.
 		# if parent and work dir and grid name ONLY - grid goes in work dir
 		
 		# PASS FULL PATH specification into fmake
-		
 		temp_path = fpath()
 		temp_path.filename = gridfilename
 		
@@ -954,7 +953,9 @@ class fgrid(object):				#Grid object.
 			if self._parent.work_dir:
 				path = self._path.absolute_to_workdir+slash+temp_path.filename
 		
-		fm = fmake(path,x,y,z)
+		if radial: y = [-1,1]
+		fm = fmake(path,x,y,z,radial)
+
 		fm.write()		
 		self.read(path,full_connectivity,octree)
 	def lagrit_stor(self, grid = None, stor = None, exe = dflt.lagrit_path, overwrite = False):
@@ -1476,11 +1477,12 @@ class fgrid(object):				#Grid object.
 class fmake(object): 				#Rectilinear grid constructor.
 	"""Generate an orthogonal mesh corresponding to vectors of nodal positions.
 	"""
-	def __init__(self,meshname,x=None,y=None,z=None):
+	def __init__(self,meshname,x=None,y=None,z=None,radial=False):
 		self._x = list(np.unique(x))
 		self._y = list(np.unique(y))
 		self._z = list(np.unique(z))
 		self._dimension = None
+		self.radial=radial
 		self._meshname = ''
 		if meshname: self._meshname = meshname
 	def write(self,meshname=''):
@@ -1511,14 +1513,6 @@ class fmake(object): 				#Rectilinear grid constructor.
 			outfile.write('\n')
 		outfile.write('\t0\n')
 		outfile.write('elem\n')
-		#if self._full_connectivity:
-		#	outfile.write(str(len(self.elemlist[0].nodes))+' '+str(len(self.elemlist))+'\n')		
-		#	for el in self.elemlist:
-		#		outfile.write(str(int(el.index))+'   ')
-		#		for nd in el.nodes:
-		#			outfile.write(str(nd.index)+'   ')
-		#		outfile.write('\n')
-		#else:
 		outfile.write(str(len(self.elemlist[0]))+' '+str(len(self.elemlist))+'\n')		
 		for i,el in enumerate(self.elemlist):
 			outfile.write(str(i+1)+'   ')
@@ -1531,46 +1525,41 @@ class fmake(object): 				#Rectilinear grid constructor.
 		"""Generate grid node and element objects corresponding to x y and z seeds.
 		"""
 		# first determine dimension of grid
-		xF = self.x != None; yF = self.y != None; zF = self.z != None
-		if xF and yF and zF: self.dimension = 3
-		elif (xF and yF and not zF) or (xF and zF and not yF) or (zF and yF and not xF): self.dimension = 2
-		else: print('ERROR: not enough dimensions specified'); return
-		if self.dimension == 2: print('ERROR: two dimensional grids not supported'); return
-		if self.dimension == 3:
-			# create nodes
-			self._nodelist = []
-			ind = 1
-			self._z = list(np.sort(self._z))
-			self._x = list(np.sort(self._x))
-			self._y = list(np.sort(self._y))
-			for zi in self._z:
-				for yi in self._y:
-					for xi in self._x:
-						self._nodelist.append(fnode(index=ind,position=[xi,yi,zi]))
-						ind +=1
-			
-			# create elements
-			self._elemlist = []
-			ind = 1
-			xL = len(self._x); yL = len(self._y); zL = len(self._z)
-			for i in range(1,len(self._z)):
-				for j in range(1,len(self._y)):
-					for k in range(1,len(self._x)):
-						nodes=[
-							self._nodelist[i*xL*yL + (j-1)*xL + k-1],
-							self._nodelist[i*xL*yL + (j-1)*xL + k],
-							self._nodelist[i*xL*yL + j*xL + k],
-							self._nodelist[i*xL*yL + j*xL + k-1],
-							self._nodelist[(i-1)*xL*yL + (j-1)*xL + k-1],
-							self._nodelist[(i-1)*xL*yL + (j-1)*xL + k],
-							self._nodelist[(i-1)*xL*yL + j*xL + k],
-							self._nodelist[(i-1)*xL*yL + j*xL + k-1],
-							]
-						#if self._full_connectivity:
-						#	self._elemlist.append(felem(index=ind,nodes=nodes))
-						#	ind +=1
-						#else:
-						self._elemlist.append(nodes)
+		# create nodes
+		self._nodelist = []
+		ind = 1
+		self._z = list(np.sort(self._z))
+		self._x = list(np.sort(self._x))
+		self._y = list(np.sort(self._y))
+		dth = np.tan(1./360.*np.pi)
+		for zi in self._z:
+			for yi in self._y:
+				for xi in self._x:
+					if self.radial:
+						yv = yi*xi*dth
+					else:
+						yv = yi*1.
+					self._nodelist.append(fnode(index=ind,position=[xi,yv,zi]))
+					ind +=1
+		
+		# create elements
+		self._elemlist = []
+		ind = 1
+		xL = len(self._x); yL = len(self._y); zL = len(self._z)
+		for i in range(1,len(self._z)):
+			for j in range(1,len(self._y)):
+				for k in range(1,len(self._x)):
+					nodes=[
+						self._nodelist[i*xL*yL + (j-1)*xL + k-1],
+						self._nodelist[i*xL*yL + (j-1)*xL + k],
+						self._nodelist[i*xL*yL + j*xL + k],
+						self._nodelist[i*xL*yL + j*xL + k-1],
+						self._nodelist[(i-1)*xL*yL + (j-1)*xL + k-1],
+						self._nodelist[(i-1)*xL*yL + (j-1)*xL + k],
+						self._nodelist[(i-1)*xL*yL + j*xL + k],
+						self._nodelist[(i-1)*xL*yL + j*xL + k-1],
+						]
+					self._elemlist.append(nodes)
 	def _get_x(self): return self._x
 	def _set_x(self,value): self._x = value
 	x = property(_get_x, _set_x) #: (*lst[fl64]*) x coordinates of nodes.

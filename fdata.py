@@ -23,7 +23,7 @@ Public License for more details.
 
 import numpy as np
 from copy import copy, deepcopy
-import os,time,platform,shutil
+import os,time,platform,shutil,sys
 from subprocess import Popen, PIPE, CREATE_NEW_CONSOLE
 from time import sleep
 from collections import Counter
@@ -437,6 +437,37 @@ class fzone(object):						#FEHM zone object.
                 pyfehm_print('no direction specified',self._silent)
                 return
         self.fix_stress(direction=direction,stress=0,file=file)
+    def extract(self, rate, zoneflux_output=True):
+        ''' convenience method for adding extraction
+
+            :param rate: If float, interpreted as constant extraction rate, otherwise a two column array denoting variable extraction rate over time.
+            :type rate: float, array-like
+            :param zoneflux_output: Flag indicating whether output should be generated for this source term.
+            :type displacement: bool
+        '''
+        # check if array-like
+        try:
+            [_ for _ in rate]
+            variable_extraction=True
+            rate = np.array(rate)
+            assert any(np.array(rate.shape) == 2)
+            if rate.shape[1] != 2: rate = rate.T
+        except TypeError:
+            rate = float(rate)
+            variable_extraction=False
+
+        if variable_extraction:
+            flow = fboun('ti_linear', self.index, times=rate[:,0], variable=[['dsw'+list(rate[:,1])],])
+        else:
+            flow = fmacro('flow',self.index,(('rate',rate),('energy',50),('impedance',0)))
+        self._parent.add(flow)
+
+        if zoneflux_output:
+            self._parent.hist.zoneflux.append(self)
+            self._parent.hist.variables = list(set(self._parent.hist.variables+['flow','zflux']))
+            if len(self._parent.hist.nodelist) == 0:
+                self._parent.hist.nodelist.append(self.nodelist[0])
+
     def copy_from(self,from_zone=None,grid_new=None,method = 'nearest',grid_old=None):
         '''Transfer zone information from one grid to another.
         
@@ -2153,7 +2184,7 @@ class fcont(object):						#FEHM contour output object.
     PyFEHM) and at specified times.
     """
     __slots__=['_silent','_format','_timestep_interval','_time_interval','_time_flag','_variables','_zones']
-    def __init__(self,format=dflt.cont_format,timestep_interval=1000,time_interval=1.e30,time_flag=True,variables=[],zones=[]):
+    def __init__(self,format=dflt.cont_format,timestep_interval=1000,time_interval=1.e30,time_flag=True,variables=['xyz'],zones=[]):
         self._format = format 	
         self._silent = dflt.silent		
         self._timestep_interval=timestep_interval 
@@ -2553,7 +2584,7 @@ class files(object):						#FEHM file constructor.
     '''
     __slots__=['_silent','_root','_input','_grid','_incon','_use_incon','_rsto','_use_rsto','_outp','_use_outp','_check',
         '_use_check','_hist','_use_hist','_co2in','_use_co2in','_stor','_use_stor','_parent','_exe','_co2_inj_time',
-        '_nopf','_use_nopf','_error','_use_error']
+        '_nopf','_use_nopf','_error','_use_error','_trac','_use_trac']
     def __init__(self,root='',input='',grid='',incon='',rsto='',outp='',check='',hist='',co2in='',stor='',exe='fehm.exe',co2_inj_time=None):
         self._root = ''
         self._silent = dflt.silent
@@ -2668,6 +2699,10 @@ class files(object):						#FEHM file constructor.
             if not self.stor: self.stor = self.root+'.stor'
             outfile.write(' '+self.stor)
             outfile.write('\n')
+
+        if self._use_trac:
+            outfile.write('trac:  {:s}\n'.format(self._trac))
+            
         if self.root: outfile.write('root:'+self.root+'\n')		
         
         # level of print screen output
@@ -2733,6 +2768,9 @@ class files(object):						#FEHM file constructor.
         self._use_stor = True
         self._parent.ctrl['stor_file_LDA'] = 1
     stor = property(_get_stor,_set_stor)	#: (*str*) Name of store file.
+    def _get_trac(self): return self._trac
+    def _set_trac(self,value):  self._trac = value; self._use_trac = True
+    trac = property(_get_trac,_set_trac)	#: (*str*) Name of trac file.
     def _get_exe(self): return self._exe
     def _set_exe(self,value):  self._exe = value
     exe = property(_get_exe,_set_exe)#: (*str*) Path to FEHM executable. Default is 'fehm.exe'.
@@ -4411,6 +4449,9 @@ class fdata(object):						#FEHM data file.
         if new_dtmax: DIT4 = new_dtmax
         
         self.times.append([DIT1,DIT2,DIT3,ITC,DIT4])		
+    def trac_out(self):
+        trac = ftracer(self.work_dir+os.sep+self.files.trac, self.work_dir+os.sep+self.files.outp)
+        return trac
     def _read_vapl(self,infile):							#VAPL: Reads VAPL macro.
         self.vapl=True
     def _write_vapl(self,outfile):								#Writes VAPL macro.
@@ -4716,6 +4757,7 @@ class fdata(object):						#FEHM data file.
                         
         # option to write input, grid, incon files to new names
         if input: self._path.filename = input
+        if self._path.filename is None: self._path.filename = 'input.dat'
         if grid: self.grid._path.filename = grid
         if incon: self.incon._path.filename = incon
         
@@ -4785,10 +4827,10 @@ class fdata(object):						#FEHM data file.
             if breakAutorestart: break
             untilFlag = False
             if until is None:
-                p = Popen(exe_path.full_path.split(),stdout=PIPE)
+                p = Popen(exe_path.full_path.split(),stdout=PIPE,stderr=PIPE,shell=True)
                 if self._verbose:
-                    for line in iter(p.stdout.readline, b''):
-                        print(line.rstrip()) 	# print remainder to screen	
+                    for c in iter(lambda: p.stdout.read(1), b''):
+                        sys.stdout.write(c.decode("utf-8"))
                 else:
                     p.communicate()
             else:
@@ -4867,7 +4909,6 @@ class fdata(object):						#FEHM data file.
         
         p = Popen(exe+' --script=pyfehm_paraview_startup.py', shell=(not WINDOWS))	
         p.wait()
-        
     def write_vtk(self, filename = 'temp.vtk',contour=None,diff = True,zscale = 1.,
             spatial_derivatives = False, time_derivatives = False):
         '''Exports the model object to VTK.

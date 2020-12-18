@@ -188,26 +188,26 @@ if True: 					# output variable dictionaries defined in here, indented for code 
 	('Gaseous CO2 Saturation','co2_gas'),
 	('Dissolved CO2 Mass Fraction','co2_aq'),
 	('CO2 Phase State','co2_phase'),
-	('Aqueous_Species_001','species001_aq'),
-	('Aqueous_Species_002','species002_aq'),
-	('Aqueous_Species_003','species003_aq'),
-	('Aqueous_Species_004','species004_aq'),
-	('Aqueous_Species_005','species005_aq'),
-	('Aqueous_Species_006','species006_aq'),
-	('Aqueous_Species_007','species007_aq'),
-	('Aqueous_Species_008','species008_aq'),
-	('Aqueous_Species_009','species009_aq'),
-	('Aqueous_Species_010','species010_aq'),
-	('Aqueous_Species_011','species011_aq'),
-	('Aqueous_Species_012','species012_aq'),
-	('Aqueous_Species_013','species013_aq'),
-	('Aqueous_Species_014','species014_aq'),
-	('Aqueous_Species_015','species015_aq'),
-	('Aqueous_Species_016','species016_aq'),
-	('Aqueous_Species_017','species017_aq'),
-	('Aqueous_Species_018','species018_aq'),
-	('Aqueous_Species_019','species019_aq'),
-	('Aqueous_Species_020','species020_aq'),
+	('Aqueous_Species_001','Caq001'),
+	('Aqueous_Species_002','Caq002'),
+	('Aqueous_Species_003','Caq003'),
+	('Aqueous_Species_004','Caq004'),
+	('Aqueous_Species_005','Caq005'),
+	('Aqueous_Species_006','Caq006'),
+	('Aqueous_Species_007','Caq007'),
+	('Aqueous_Species_008','Caq008'),
+	('Aqueous_Species_009','Caq009'),
+	('Aqueous_Species_010','Caq010'),
+	('Aqueous_Species_011','Caq011'),
+	('Aqueous_Species_012','Caq012'),
+	('Aqueous_Species_013','Caq013'),
+	('Aqueous_Species_014','Caq014'),
+	('Aqueous_Species_015','Caq015'),
+	('Aqueous_Species_016','Caq016'),
+	('Aqueous_Species_017','Caq017'),
+	('Aqueous_Species_018','Caq018'),
+	('Aqueous_Species_019','Caq019'),
+	('Aqueous_Species_020','Caq020'),
 	])
 
 	hist_var_names=dict([
@@ -1949,11 +1949,11 @@ class fnodeflux(object): 					# Reading and plotting methods associated with int
 class ftracer(fhistory): 					# Derived class of fhistory, for tracer output
 	'''Tracer history output information object.
 	'''
-	def __init__(self,filename=None,verbose=True):
-		super(ftracer,self).__init__(filename, verbose)
-		self._filename=None	
+	def __init__(self,filename=None,output_filename=True):
+		super(ftracer,self).__init__(filename, output_filename)
+		self._filename=filename
+		self._output_filename = output_filename	
 		self._times=[]	
-		self._verbose = verbose
 		self._data={}
 		self._row=None
 		self._nodes=[]	
@@ -1962,18 +1962,52 @@ class ftracer(fhistory): 					# Derived class of fhistory, for tracer output
 		self.column_name=[]
 		self.num_columns=0
 		self._nkeys=1
-		if filename: self._filename=filename; self.read(filename)
-	def _read_data_default(self,var_key):
-		try: var_key = hist_var_names[var_key]
-		except: pass
-		self._variables.append(var_key)
-		lns = self._file.readlines()
-		data = []
-		for ln in lns: data.append([float(d) for d in ln.strip().split()])
-		data = np.array(data)
-		if data[-1,0]<data[-2,0]: data = data[:-1,:]
-		self._times = np.array(data[:,0])
-		self._data[var_key] = dict([(node,data[:,icol+1]) for icol,node in enumerate(self.nodes)])
+		if filename: self.read(filename)
+		if output_filename: self.read_output(output_filename)
+	def read(self,filename):
+		with open(filename,'r') as fp:
+			lns = fp.readlines()
+		Nnds = int(lns[2].strip())			# number of nodes
+		for i in range(Nnds):				# indices of nodes
+			self.nodes.append(int(lns[3+i].strip().split()[0]))
+		Nsps = int(lns[3+Nnds].strip().split()[0])  # number of species
+
+		Nt = int(len(lns[4+Nnds:])/(2*Nsps))   # number of timesteps
+		ts = []
+		Cs = [[] for j in range(Nsps)]
+		for i in range(Nt):
+			ts.append(float(lns[2*Nsps*i+4+Nnds].split()[0].strip()))
+			for j in range(Nsps):
+				Cs[j].append([float(v) for v in lns[2*Nsps*i+2*j+4+Nnds+1].strip().split()])
+
+		for j in range(Nsps):
+			v = 'Caq{:03d}'.format(j+1)
+			self._variables.append(v)
+			C = np.array(Cs[j])
+			self._data[v] = dict([(node,C[:,icol]) for icol,node in enumerate(self.nodes)])
+		self._times = np.array(ts)
+	def read_output(self, output_filename):
+		with open(output_filename,'r') as fp:
+			lns = fp.readlines()
+		Nsps = len(self._variables)
+		Cs = [[] for j in range(Nsps)]
+		ts = []
+		for i,ln in enumerate(lns):
+			if ln.strip().startswith('Timing Information'):
+				if not lns[i+3].strip().startswith('Heat and Mass Solution Disabled'):
+					continue
+				ts.append(float(lns[i+2].split()[1]))
+				
+			if ln.strip().startswith('Solute output information'):
+				ind = int(ln.strip().split()[-1])
+				Cs[ind-1].append([float(lns[i+3+j].split()[4]) for j in range(len(self.nodes))])
+
+		for j in range(Nsps):
+			v = 'Caq{:03d}_src'.format(j+1)
+			self._variables.append(v)
+			C = np.array(Cs[j])
+			self._data[v] = dict([(node,np.interp(self.times, ts, C[:,icol].T)) for icol,node in enumerate(self.nodes)])
+		
 class fptrk(fhistory): 						# Derived class of fhistory, for particle tracking output
 	'''Tracer history output information object.
 	'''

@@ -1991,22 +1991,30 @@ class ftracer(fhistory): 					# Derived class of fhistory, for tracer output
 			lns = fp.readlines()
 		Nsps = len(self._variables)
 		Cs = [[] for j in range(Nsps)]
+		qs = []
 		ts = []
+		dts = []
 		for i,ln in enumerate(lns):
 			if ln.strip().startswith('Timing Information'):
-				if not lns[i+3].strip().startswith('Heat and Mass Solution Disabled'):
-					continue
-				ts.append(float(lns[i+2].split()[1]))
+				t = float(lns[i+2].split()[1])
+				dt = float(lns[i+2].split()[2])*3600*24
+				
+			if ln.strip().startswith('Nodal Information (Water)'):
+				q = [float(lns[i+3+j].split()[5]) for j in range(len(self.nodes))]
 				
 			if ln.strip().startswith('Solute output information'):
+				ts.append(t)
+				dts.append(dt)
+				qs.append(q)
 				ind = int(ln.strip().split()[-1])
 				Cs[ind-1].append([float(lns[i+3+j].split()[4]) for j in range(len(self.nodes))])
 
+		qs = np.array(qs)
 		for j in range(Nsps):
 			v = 'Caq{:03d}_src'.format(j+1)
 			self._variables.append(v)
 			C = np.array(Cs[j])
-			self._data[v] = dict([(node,np.interp(self.times, ts, C[:,icol].T)) for icol,node in enumerate(self.nodes)])
+			self._data[v] = dict([(node,np.interp(self.times, ts, C[:,icol].T/qs[:,icol])) for icol,node in enumerate(self.nodes)])
 		
 class fptrk(fhistory): 						# Derived class of fhistory, for particle tracking output
 	'''Tracer history output information object.

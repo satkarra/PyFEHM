@@ -2604,6 +2604,8 @@ class files(object):						#FEHM file constructor.
         self._use_co2in = False
         self._stor = ''
         self._use_stor = False	
+        self._trac = ''
+        self._use_trac = False	
         self._nopf = ''
         self._use_nopf = False		
         self._error = ''

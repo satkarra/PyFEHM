@@ -26,7 +26,7 @@ import os,math,platform,string,subprocess,shutil
 from subprocess import Popen
 
 from time import time
-from copy import deepcopy
+# from copy import deepcopy
 from glob import glob
 
 try:

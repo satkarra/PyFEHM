@@ -1105,7 +1105,7 @@ class fcontour(object): 					# Reading and plotting methods associated with cont
 		
 		if save:
 			extension, save_fname, pdf = save_name(save=save,variable=variable,time=time)
-			plt.savefig(save_fname, dpi=100, facecolor='w', edgecolor='w',orientation='portrait', 
+			plt.savefig(save_fname, dpi=400, facecolor='w', edgecolor='w',orientation='portrait', 
 			format=extension,transparent=True, bbox_inches=None, pad_inches=0.1)
 			if pdf: 
 				os.system('epstopdf ' + save_fname)

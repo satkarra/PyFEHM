@@ -26,7 +26,7 @@ import os,math,platform,string,subprocess,shutil
 from subprocess import Popen
 
 from time import time
-# from copy import deepcopy
+from copy import deepcopy
 from glob import glob
 
 try:
@@ -1341,12 +1341,12 @@ class fgrid(object):				#Grid object.
 		self._octree=octree(self.bounding_box,self.nodelist,repair=self)	
 	def _summary(self):		
 		L = 62
-		print('')
-		print(' ####---------------------------------------------------------####')
+		pyfehm_print('', dflt.silent)
+		pyfehm_print(' ####---------------------------------------------------------####', dflt.silent)
 		line = ' #### FEHM grid file \''+self.filename+'\' summary.'
 		for i in range(L-len(line)): line += ' '
-		print(line+'####')
-		print(' ####---------------------------------------------------------####')
+		pyfehm_print(line+'####', dflt.silent)
+		pyfehm_print(' ####---------------------------------------------------------####', dflt.silent)
 		
 		lines = []
 		lines.append(' #### Domain extent:')
@@ -1360,7 +1360,7 @@ class fgrid(object):				#Grid object.
 		for line in lines:
 			if line.startswith(' ##'):
 				for i in range(L-len(line)): line += ' '
-				print(line+'####')
+				pyfehm_print(line+'####', dflt.silent)
 			else:
 				prntStr = ' #### -'
 				keepGoing = True
@@ -1368,7 +1368,7 @@ class fgrid(object):				#Grid object.
 				while keepGoing:
 					if not line: 
 						for i in range(L-len(prntStr)): prntStr += ' '
-						print(prntStr+'####')
+						pyfehm_print(prntStr+'####', dflt.silent)
 						prntStr = ' #### '
 						break
 					if len(prntStr)<(L-len(line[0])): 
@@ -1376,10 +1376,10 @@ class fgrid(object):				#Grid object.
 						line = line[1:]
 					else:
 						for i in range(L-len(prntStr)): prntStr += ' '
-						print(prntStr+'####')
+						pyfehm_print(prntStr+'####', dflt.silent)
 						prntStr = ' ####   '
-		print(' ####---------------------------------------------------------####')
-		print('')
+		pyfehm_print(' ####---------------------------------------------------------####', dflt.silent)
+		pyfehm_print('', dflt.silent)
 	def rotate(self,angle=0.,centre=[0.,0.]):
 		'''Rotates the grid by some angle about a specified vertical axis.
 		

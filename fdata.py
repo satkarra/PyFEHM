@@ -2936,7 +2936,7 @@ class fdata(object):						#FEHM data file.
     def read(self,filename='',gridfilename='',inconfilename='',full_connectivity=dflt.full_connectivity,skip=[]):			#Reads data from file.
         '''Read FEHM input file and construct fdata object.
         
-        :param filename: Name of FEHM input file. Alternatively, supplying 'fehmn.files' will cause PyFEHM to query this file for input, grid and restart file names if they are available.
+        :param filename: Name of FEHM input *.dat file. 
         :type filename: str
         :param gridfilename: Name of FEHM grid file.
         :type gridfilename: str
@@ -2976,7 +2976,7 @@ class fdata(object):						#FEHM data file.
                         [self._read_cont,self._read_macro,self._read_zonn,self._read_zonn,self._read_macro,
                          self._read_time,self._read_ctrl,self._read_iter,self._read_macro,self._read_macro,
                          self._read_boun,self._read_macro,self._read_strs,self._read_text,self._read_sol,
-                        self._read_nfinv,self._read_hist,self._read_histnode,self._read_carb,self._read_model,
+                         self._read_nfinv,self._read_hist,self._read_histnode,self._read_carb,self._read_model,
                          self._read_macro,self._read_nobr,self._read_flxz,self._read_rlpm,self._read_macro,
                          self._read_trac,self._read_model,self._read_model,self._read_vapl,self._read_adif,
                          self._read_ngas,self._read_flxo,self._read_head,self._read_flxn, self._read_air, self._read_air])))

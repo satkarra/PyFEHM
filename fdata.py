@@ -544,7 +544,7 @@ class fzone(object):						#FEHM zone object.
         plt.clf()
         fig = plt.figure(figsize=[8.275,11.7])
         ax = plt.axes(projection='3d')
-        ax.set_aspect('equal', 'datalim')
+        ax.set_aspect('auto', 'datalim')
         
         ax.set_xlabel(xlabel,size=font_size)
         ax.set_ylabel(ylabel,size=font_size)
@@ -707,7 +707,7 @@ class fzone(object):						#FEHM zone object.
         ax = plt.axes([0.15,0.15,0.7,0.7])
         if xlims: ax.set_xlim(xlims)
         if ylims: ax.set_ylim(ylims)
-        if equal_axes: ax.set_aspect('equal', 'datalim')
+        if equal_axes: ax.set_aspect('auto', 'datalim')
         CS = plt.contourf(X,Y,vals,levels)
         if clims: CS.vmin=clims[0]; CS.vmax=clims[1]
         if xlabel: plt.xlabel(xlabel,size=font_size)		
@@ -718,11 +718,11 @@ class fzone(object):						#FEHM zone object.
             for t in cbar.ax.get_yticklabels():
                 t.set_fontsize(font_size)
         for t in ax.get_xticklabels():
-            t.set_fontsize(font_size)
+            t.set_fontsize(font_size)uto
         for t in ax.get_yticklabels():
             t.set_fontsize(font_size)
                     
-        ax.set_aspect('equal', 'datalim')
+        ax.set_aspect('auto', 'datalim')
         extension, save_fname, pdf = save_name(save,variable='zone_topo'+str(self.index),time=1)
         plt.savefig(save_fname, dpi=200, facecolor='w', edgecolor='w',orientation='portrait', 
         format=extension,transparent=True, bbox_inches=None, pad_inches=0.1)

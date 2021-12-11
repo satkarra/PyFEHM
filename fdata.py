@@ -24,7 +24,7 @@ Public License for more details.
 import numpy as np
 from copy import copy, deepcopy
 import os,time,platform,shutil,sys
-from subprocess import Popen, PIPE, CREATE_NEW_CONSOLE
+from subprocess import Popen, PIPE
 from time import sleep
 from collections import Counter
 from matplotlib.patches import Rectangle

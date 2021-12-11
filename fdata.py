@@ -718,7 +718,7 @@ class fzone(object):						#FEHM zone object.
             for t in cbar.ax.get_yticklabels():
                 t.set_fontsize(font_size)
         for t in ax.get_xticklabels():
-            t.set_fontsize(font_size)uto
+            t.set_fontsize(font_size)
         for t in ax.get_yticklabels():
             t.set_fontsize(font_size)
                     
